@@ -27,7 +27,6 @@ const ll MOD = 1e9 + 7;
 void chmax(ll &a, ll b) { a = max(a, b); }
 void chmin(ll &a, ll b) { a = min(a, b); }
 
-
 template<typename Monoid>
 struct SegmentTree {
     using F = function<Monoid(Monoid, Monoid)>;
