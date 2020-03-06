@@ -1,12 +1,18 @@
+/**
+ */
+
 #include <bits/stdc++.h>
 using namespace std;
 
 typedef long long ll;
+typedef long double ld;
 typedef pair<ll, ll> pll;
 typedef pair<ll, int> pli;
 typedef pair<int, int> pii;
-typedef pair<pii, ll> ppiil;
+typedef pair<ll, ld> pld;
 typedef pair<pii, int> ppiii;
+typedef pair<pii, ll> ppiil;
+typedef pair<pll, ll> pplll;
 typedef vector<vector<ll>> vvl;
 typedef vector<vector<int>> vvi;
 #define rep(i, a, b) for (ll i=(a); i<(b); i++)
@@ -17,12 +23,18 @@ typedef vector<vector<int>> vvi;
 #define mkp make_pair
 const ll INF = 1e18;
 const ll MOD = 1e9 + 7;
-void chmax(ll &a, ll b) { a = max(a, b); }
-void chmin(ll &a, ll b) { a = min(a, b); }
+// void chmax(ll &a, ll b) { a = max(a, b); }
+// void chmin(ll &a, ll b) { a = min(a, b); }
+template<typename T> inline bool chmax(T &x, T y) {return (y > x) ? x = y, true : false;}
+template<typename T> inline bool chmin(T &x, T y) {return (y < x) ? x = y, true : false;}
 
 template<typename T>
 void print(T out) {
     cout << out << '\n';
+}
+
+void print(ld out) {
+    cout << fixed << setprecision(12) << out << '\n';
 }
 
 template<typename T1, typename T2>
@@ -91,6 +103,18 @@ ll toint(string s) {
 
 int toint(char c) {
     return c - '0';
+}
+
+ll pow(ll x, ll n, int mod) {
+    ll res = 1;
+    while (n > 0) {
+        if (n & 1) {
+            res = (res * x) % mod;
+        }
+        x = (x * x) % mod;
+        n >>= 1;
+    }
+    return res;
 }
 
 int main() {

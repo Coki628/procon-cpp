@@ -64,6 +64,15 @@ ll min(ll A[], int len) {
 
 // ここから関数
 
+template<typename T>
+map<T, ll> Counter(vector<T> A) {
+    map<T, ll> res;
+    for (T a : A) {
+        res[a]++;
+    }
+    return res;
+}
+
 // 条件を満たす最小値を見つける二分探索
 ll bisearch_min(ll mn, ll mx, function<bool(ll)> func) {
 
@@ -113,6 +122,34 @@ pair<mli, mil> compress(set<ll> S) {
         unzipped[i] = A[i];
     }
     return mkp(zipped, unzipped);
+}
+
+// ダイクストラ(重み付き、テンプレートで小数コストも対応)
+template<typename T>
+vector<T> dijkstra(int N, vector<vector<pair<ll, T>>> nodes, int src) {
+
+    vector<T> res(N, INF);
+    res[src] = 0;
+    priority_queue<pair<T, ll>, vector<pair<T, ll>>, greater<pair<T, ll>>> que;
+    que.push(mkp(0, src));
+
+    while(!que.empty()) {
+        pll p = que.top(); que.pop();
+        ll dist = p.first;
+        int cur = p.second;
+        if (res[cur] < dist) {
+            continue;
+        }
+        for (auto p: nodes[cur]) {
+            ll nxt = p.first;
+            T cost = p.second;
+            if (res[cur] + cost < res[nxt]) {
+                res[nxt] = res[cur] + cost;
+                que.push(mkp(res[nxt], nxt));
+            }
+        }
+    }
+    return res;
 }
 
 
@@ -295,7 +332,7 @@ struct SegmentTree {
     }
 
     // 区間[l,r]で左からx番目の値がある位置
-    ll bisearch_left(ll l, ll r, ll x) {
+    ll bisearch_fore(ll l, ll r, ll x) {
         ll ok = r + 1;
         ll ng = l - 1;
         while (ng+1 < ok) {
@@ -309,12 +346,12 @@ struct SegmentTree {
         if (ok != r + 1) {
             return ok;
         } else {
-            return -1;
+            return INF;
         }
     }
 
     // 区間[l,r]で右からx番目の値がある位置
-    ll bisearch_right(ll l, ll r, ll x) {
+    ll bisearch_back(ll l, ll r, ll x) {
         ll ok = l - 1;
         ll ng = r + 1;
         while (ok+1 < ng) {
@@ -328,7 +365,7 @@ struct SegmentTree {
         if (ok != l - 1) {
             return ok;
         } else {
-            return -1;
+            return -INF;
         }
     }
 
