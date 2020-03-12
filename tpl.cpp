@@ -23,10 +23,8 @@ typedef vector<vector<int>> vvi;
 #define mkp make_pair
 const ll INF = 1e18;
 const ll MOD = 1e9 + 7;
-// void chmax(ll &a, ll b) { a = max(a, b); }
-// void chmin(ll &a, ll b) { a = min(a, b); }
-template<typename T> inline bool chmax(T &x, T y) {return (y > x) ? x = y, true : false;}
-template<typename T> inline bool chmin(T &x, T y) {return (y < x) ? x = y, true : false;}
+template<typename T> inline bool chmax(T &x, T y) { return (y > x) ? x = y, true : false; }
+template<typename T> inline bool chmin(T &x, T y) { return (y < x) ? x = y, true : false; }
 
 template<typename T>
 void print(T out) {
