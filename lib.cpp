@@ -73,6 +73,14 @@ map<T, ll> Counter(vector<T> A) {
     return res;
 }
 
+map<char, ll> Counter(string S) {
+    map<char, ll> res;
+    for (char c : S) {
+        res[c]++;
+    }
+    return res;
+}
+
 // 条件を満たす最小値を見つける二分探索
 ll bisearch_min(ll mn, ll mx, function<bool(ll)> func) {
 
@@ -483,5 +491,114 @@ struct SegmentTreeIndex {
 
     Monoid operator[](const int &k) const {
         return seg[k+sz];
+    }
+};
+
+
+// スパーステーブル：構築にO(NlogN)、区間最小(最大)をO(1)で取得
+struct SparseTable {
+
+    const function<ll(ll, ll)> func;
+    vvl dat;
+    vector<ll> height;
+
+    SparseTable(function<ll(ll, ll)> func) : func(func) {
+    }
+
+    SparseTable(vector<ll> A, function<ll(ll, ll)> func) : func(func) {
+        build(A);
+    }
+
+    void build(vector<ll> A) {
+        ll N = A.size();
+
+        ll h = 0;
+        while ((1<<h) < N) {
+            h++;
+        }
+        dat.resize(h);
+        rep(i, 0, h) dat[i].resize(1<<h);
+        height.resize(N+1);
+
+        rep(i, 2, N+1) {
+            height[i] = height[i>>1] + 1;
+        }
+        rep(i, 0, N) {
+            dat[0][i] = A[i];
+        }
+        rep(i, 1, h) {
+            rep(j, 0, N) {
+                dat[i][j] = func(dat[i-1][j], dat[i-1][min(j+(1<<(i-1)), N-1)]);
+            }
+        }
+    }
+
+    // 区間[l,r)でのmin,maxを取得
+    ll get(ll l, ll r) {
+        if (l >= r) throw exception();
+        ll a = height[r-l];
+        return func(dat[a][l], dat[a][r-(1<<a)]);
+    }
+};
+
+
+// 区間加算BIT(区間加算・区間合計取得)
+struct BIT2 {
+
+    ll N;
+    vector<ll> data0, data1;
+
+    BIT2() {};
+
+    BIT2(ll N) {
+        resize(N);
+    }
+
+    void resize(ll n) {
+        // 添字0が使えないので、内部的には全て1-indexedとして扱う
+        N = ++n;
+        data0.resize(N);
+        data1.resize(N);
+    }
+
+    void _add(vector<ll> &data, ll k, ll x) {
+        k++;
+        while (k < N) {
+            data[k] += x;
+            k += k & -k;
+        }
+    }
+
+    ll _get(vector<ll> &data, ll k) {
+        k++;
+        ll s = 0;
+        while (k) {
+            s += data[k];
+            k -= k & -k;
+        }
+        return s;
+    }
+
+    // 区間[l,r)に値xを追加 
+    void add(ll l, ll r, ll x) {
+        _add(data0, l, -x*(l-1));
+        _add(data0, r, x*(r-1));
+        _add(data1, l, x);
+        _add(data1, r, -x);
+    }
+
+    // 1点更新
+    void add(ll i, ll x) {
+        add(i, i+1, x);
+    }
+
+    // 区間[l,r)の和を取得
+    ll query(ll l, ll r) {
+        return _get(data1, r-1) * (r-1) + _get(data0, r-1) - _get(data1, l-1) * (l-1) - _get(data0, l-1);
+    }
+
+    // 1点取得
+    ll get(ll i) {
+        return query(i, i+1);
     }
 };
