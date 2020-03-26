@@ -13,8 +13,10 @@ typedef pair<ll, ld> pld;
 typedef pair<pii, int> ppiii;
 typedef pair<pii, ll> ppiil;
 typedef pair<pll, ll> pplll;
+typedef pair<pli, int> pplii;
 typedef vector<vector<ll>> vvl;
 typedef vector<vector<int>> vvi;
+typedef vector<vector<pll>> vvpll;
 #define rep(i, a, b) for (ll i=(a); i<(b); i++)
 #define rrep(i, a, b) for (ll i=(a); i>(b); i--)
 #define btoe(obj) (obj).begin(), (obj).end()
@@ -103,6 +105,12 @@ int toint(char c) {
     return c - '0';
 }
 
+inline ll pow(int a, ll b) {
+    ll res = 1;
+    rep(_, 0, b) res *= a;
+    return res;
+}
+
 ll pow(ll x, ll n, int mod) {
     ll res = 1;
     while (n > 0) {
@@ -113,6 +121,22 @@ ll pow(ll x, ll n, int mod) {
         n >>= 1;
     }
     return res;
+}
+
+ll floor(ll a, ll b) {
+    if (a < 0) {
+        return (a-b+1)/b;
+    } else {
+        return a/b;
+    }
+}
+
+ll ceil(ll a, ll b) {
+    if (a >= 0) {
+        return (a+b-1)/b;
+    } else {
+        return a/b;
+    }
 }
 
 int main() {
