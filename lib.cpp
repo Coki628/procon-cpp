@@ -132,32 +132,55 @@ pair<mli, mil> compress(set<ll> S) {
     return mkp(zipped, unzipped);
 }
 
-// ダイクストラ(重み付き、テンプレートで小数コストも対応)
+// ダイクストラ(テンプレートで小数コストも対応)
 template<typename T>
-vector<T> dijkstra(int N, vector<vector<pair<ll, T>>> nodes, int src) {
+vector<T> dijkstra(vector<vector<pair<ll, T>>> nodes, int src) {
 
+    ll N = nodes.size();
     vector<T> res(N, INF);
-    res[src] = 0;
     priority_queue<pair<T, ll>, vector<pair<T, ll>>, greater<pair<T, ll>>> que;
+    res[src] = 0;
     que.push(mkp(0, src));
 
+    pair<T, ll> p;
+    T dist, cost;
+    int cur, nxt;
     while(!que.empty()) {
-        pll p = que.top(); que.pop();
-        ll dist = p.first;
-        int cur = p.second;
+        p = que.top(); que.pop();
+        dist = p.first;
+        cur = p.second;
         if (res[cur] < dist) {
             continue;
         }
         for (auto p: nodes[cur]) {
-            ll nxt = p.first;
-            T cost = p.second;
-            if (res[cur] + cost < res[nxt]) {
-                res[nxt] = res[cur] + cost;
-                que.push(mkp(res[nxt], nxt));
+            nxt = p.first;
+            cost = p.second;
+            if (dist + cost < res[nxt]) {
+                res[nxt] = dist + cost;
+                que.push(mkp(dist+cost, nxt));
             }
         }
     }
     return res;
+}
+
+template<typename T>
+vector<vector<T>> warshall_floyd(vector<vector<T>> G) {
+    ll N = G.size();
+    rep(i, 0, N) G[i][i] = 0;
+    rep(k, 0, N) {
+        rep(i, 0, N) {
+            rep(j, 0, N) {
+                chmin(G[i][j], G[i][k] + G[k][j]);
+            }
+        }
+    }
+    rep(i, 0, N) {
+        if (G[i][i] < 0) {
+            return {};
+        }
+    }
+    return G;
 }
 
 
