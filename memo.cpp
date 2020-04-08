@@ -8,3 +8,15 @@ using ll = long long;
 
 // 高速化っぽい
 #define fast  ios_base::sync_with_stdio(0);cin.tie(NULL);cout.tie(NULL);
+
+vector<int> A;
+
+int main() {
+    cin.tie(0);
+    ios::sync_with_stdio(false);
+
+    // 降順ソート
+    sort(A.rbegin(), A.rend());
+
+    return 0;
+}
