@@ -40,6 +40,7 @@ ll min(vector<ll> A) { ll res = INF; for (ll a: A) chmin(res, a); return res; }
 
 ll toint(string s) { ll res = 0; for (char c : s) { res *= 10; res += (c - '0'); } return res; }
 int toint(char c) { return c - '0'; }
+char tochar(int i) { return '0' + i; }
 
 inline ll pow(int x, ll n) { ll res = 1; rep(_, 0, n) res *= x; return res; }
 inline ll pow(ll x, ll n, int mod) { ll res = 1; while (n > 0) { if (n & 1) { res = (res * x) % mod; } x = (x * x) % mod; n >>= 1; } return res; }

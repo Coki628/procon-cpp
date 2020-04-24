@@ -48,6 +48,25 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
+template<typename T>
+vector<T> accumulate(vector<T> A) {
+	int N = A.size();
+	vector<T> res(N);
+	res[0] = A[0];
+	rep(i, 1, N) res[i] = res[i-1] + A[i];
+	return res;
+}
+
+template<typename T>
+vector<T> accumulate(vector<T> A, function<T(T, T)> func) {
+	int N = A.size();
+	vector<T> res(N);
+	res[0] = A[0];
+	rep(i, 1, N) res[i] = func(res[i-1], A[i]);
+	return res;
+}
+// accumulate<ll>(A, [](ll a, ll b) { return min(a, b); });
+
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);

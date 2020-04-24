@@ -50,8 +50,8 @@ int popcount(ll S) { return __builtin_popcountll(S); }
 // ここから関数
 
 template<typename T>
-map<T, ll> Counter(vector<T> A) {
-    map<T, ll> res;
+unordered_map<T, ll> Counter(vector<T> A) {
+    unordered_map<T, ll> res;
     for (T a : A) {
         res[a]++;
     }
@@ -65,6 +65,25 @@ map<char, ll> Counter(string S) {
     }
     return res;
 }
+
+template<typename T>
+vector<T> accumulate(vector<T> A) {
+	int N = A.size();
+	vector<T> res(N);
+	res[0] = A[0];
+	rep(i, 1, N) res[i] = res[i-1] + A[i];
+	return res;
+}
+
+template<typename T>
+vector<T> accumulate(vector<T> A, function<T(T, T)> func) {
+	int N = A.size();
+	vector<T> res(N);
+	res[0] = A[0];
+	rep(i, 1, N) res[i] = func(res[i-1], A[i]);
+	return res;
+}
+// accumulate<ll>(A, [](ll a, ll b) { return min(a, b); });
 
 // 条件を満たす最小値を見つける二分探索
 ll bisearch_min(ll mn, ll mx, function<bool(ll)> func) {
@@ -103,9 +122,9 @@ ll bisearch_max(ll mn, ll mx, function<bool(ll)> func) {
 }
 
 // 座標圧縮
-typedef map<ll, int> mli;
-typedef map<int, ll> mil;
-pair<mli, mil> compress(set<ll> S) {
+typedef unordered_map<ll, int> mli;
+typedef unordered_map<int, ll> mil;
+pair<mli, mil> compress(unordered_set<ll> S) {
     mli zipped;
     mil unzipped;
     vector<ll> A(S.begin(), S.end());
@@ -116,7 +135,6 @@ pair<mli, mil> compress(set<ll> S) {
     }
     return mkp(zipped, unzipped);
 }
-
 // ダイクストラ(テンプレートで小数コストも対応)
 template<typename T>
 vector<T> dijkstra(vector<vector<pair<ll, T>>> nodes, int src) {
@@ -311,6 +329,10 @@ struct SegmentTree {
         while(sz < n) sz <<= 1;
         seg.resize(2 * sz, M1);
     }
+
+    void clear() {
+        seg.clear();
+    }
     
     void set(int k, const Monoid &x) {
         seg[k+sz] = x;
@@ -402,6 +424,7 @@ struct SegmentTree {
 };
 
 
+// TODO: バグってることが発覚したので、このC++版もそのうち直す。
 template<typename Monoid>
 struct SegmentTreeIndex {
     using F = function<Monoid(Monoid, Monoid)>;
@@ -587,7 +610,7 @@ struct BIT2 {
         return s;
     }
 
-    // 区間[l,r)に値xを追加 
+    // 区間[l,r)に値xを加算
     void add(ll l, ll r, ll x) {
         _add(data0, l, -x*(l-1));
         _add(data0, r, x*(r-1));
@@ -595,7 +618,7 @@ struct BIT2 {
         _add(data1, r, -x);
     }
 
-    // 1点更新
+    // 1点加算
     void add(ll i, ll x) {
         add(i, i+1, x);
     }
@@ -608,6 +631,11 @@ struct BIT2 {
     // 1点取得
     ll get(ll i) {
         return query(i, i+1);
+    }
+
+    // 1点更新
+    void update(ll i, ll x) {
+        add(i, i+1, x - get(i));
     }
 };
 

@@ -17,6 +17,9 @@ int main() {
 
     // 降順ソート
     sort(A.rbegin(), A.rend());
+    // 最大値
+    ll INF = LONG_LONG_MAX;
+    cout << INF << endl;
 
     return 0;
 }
