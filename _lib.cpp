@@ -50,7 +50,7 @@ int popcount(ll S) { return __builtin_popcountll(S); }
 // ここから関数
 
 template<typename T>
-unordered_map<T, ll> Counter(vector<T> A) {
+unordered_map<T, ll> Counter(vector<T> &A) {
     unordered_map<T, ll> res;
     for (T a : A) {
         res[a]++;
@@ -67,21 +67,21 @@ map<char, ll> Counter(string S) {
 }
 
 template<typename T>
-vector<T> accumulate(vector<T> A) {
-	int N = A.size();
-	vector<T> res(N);
-	res[0] = A[0];
-	rep(i, 1, N) res[i] = res[i-1] + A[i];
-	return res;
+vector<T> accumulate(vector<T> &A) {
+    int N = A.size();
+    vector<T> res(N);
+    res[0] = A[0];
+    rep(i, 1, N) res[i] = res[i-1] + A[i];
+    return res;
 }
 
 template<typename T>
-vector<T> accumulate(vector<T> A, function<T(T, T)> func) {
-	int N = A.size();
-	vector<T> res(N);
-	res[0] = A[0];
-	rep(i, 1, N) res[i] = func(res[i-1], A[i]);
-	return res;
+vector<T> accumulate(vector<T> &A, function<T(T, T)> func) {
+    int N = A.size();
+    vector<T> res(N);
+    res[0] = A[0];
+    rep(i, 1, N) res[i] = func(res[i-1], A[i]);
+    return res;
 }
 // accumulate<ll>(A, [](ll a, ll b) { return min(a, b); });
 
@@ -135,6 +135,39 @@ pair<mli, mil> compress(unordered_set<ll> S) {
     }
     return mkp(zipped, unzipped);
 }
+
+// グリッドBFS
+vvi bfs(vector<vector<char>> grid, vector<pii> src) {
+    int H = grid.size();
+    int W = grid[0].size();
+    const vector<pii> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    vvi dist(H, vector<int>(W, INF));
+    queue<pii> que;
+    int h, w, dh, dw, h2, w2;
+    for (auto p : src) {
+        tie(h, w) = p;
+        que.push(p);
+        dist[h][w] = 0;
+    }
+    while (!que.empty()) {
+        tie(h, w) = que.front(); que.pop();
+        for (auto p : directions) {
+            tie(dh, dw) = p;
+            h2 = h + dh;
+            w2 = w + dw;
+            if (grid[h2][w2] == -1) {
+                continue;
+            }
+            if (dist[h2][w2] != INF) {
+                continue;
+            }
+            dist[h2][w2] = dist[h][w] + 1;
+            que.push({h2, w2});
+        }
+    }
+    return dist;
+}
+
 // ダイクストラ(テンプレートで小数コストも対応)
 template<typename T>
 vector<T> dijkstra(vector<vector<pair<ll, T>>> nodes, int src) {
@@ -544,7 +577,7 @@ struct SparseTable {
         ll N = A.size();
 
         ll h = 0;
-        while ((1<<h) < N) {
+        while ((1<<h) <= N) {
             h++;
         }
         dat.resize(h);
@@ -570,7 +603,173 @@ struct SparseTable {
         ll a = height[r-l];
         return func(dat[a][l], dat[a][r-(1<<a)]);
     }
+
+    // 区間[l,r]で左から最初にxに対して比較の条件を満たすような値が出現する位置
+    ll bisearch_fore(ll l, ll r, ll x, function<bool(ll, ll)> compare) {
+        ll ok = r + 1;
+        ll ng = l - 1;
+        while (ng+1 < ok) {
+            ll mid = (ok+ng) / 2;
+            if (compare(get(l, mid+1), x)) {
+                ok = mid;
+            } else {
+                ng = mid;
+            }
+        }
+        if (ok != r + 1) {
+            return ok;
+        } else {
+            return INF;
+        }
+    }
+
+    // 区間[l,r]で右から最初にxに対して比較の条件を満たすような値が出現する位置
+    ll bisearch_back(ll l, ll r, ll x, function<bool(ll, ll)> compare) {
+        ll ok = l - 1;
+        ll ng = r + 1;
+        while (ok+1 < ng) {
+            ll mid = (ok+ng) / 2;
+            if (compare(get(mid, r+1), x)) {
+                ok = mid;
+            } else {
+                ng = mid;
+            }
+        }
+        if (ok != l - 1) {
+            return ok;
+        } else {
+            return -INF;
+        }
+    }
+    // 仕様例
+    // stmx.bisearch_back(l, r, x, greater<ll>());
 };
+
+
+template<typename T>
+struct BIT {
+
+    int sz;
+    vector<T> tree;
+
+    BIT(int n) {
+        // 0-indexed
+        n++;
+        sz = 1;
+        while (sz < n) {
+            sz *= 2;
+        }
+        tree.resize(sz);
+    }
+
+    // [0, i]を合計する
+    T sum(int i) {
+        T s = 0;
+        i++;
+        while (i > 0) {
+            s += tree[i-1];
+            i -= i & -i;
+        }
+        return s;
+    }
+
+    void add(int i, T x) {
+        i++;
+        while (i <= sz) {
+            tree[i-1] += x;
+            i += i & -i;
+        }
+    }
+
+    // 区間和の取得 [l, r)
+    T query(int l, int r) {
+        return sum(r-1) - sum(l-1);
+    }
+
+    T get(int i) {
+        return query(i, i+1);
+    }
+
+    void update(int i, T x) {
+        add(i, x - get(i));
+    }
+
+    // 区間[l, r]を左から右に向かってx番目の値がある位置
+    ll bisearch_fore(int l, int r, ll x) {
+        ll l_sm = sum(l-1);
+        int ok = r + 1;
+        int ng = l - 1;
+        while (ng+1 < ok) {
+            int mid = (ok+ng) / 2;
+            if (sum(mid) - l_sm >= x) {
+                ok = mid;
+            } else {
+                ng = mid;
+            }
+        }
+        if (ok != r+1) {
+            return ok;
+        } else {
+            return INF;
+        }
+    }
+
+    // 区間[l, r]を右から左に向かってx番目の値がある位置
+    ll bisearch_back(int l, int r, ll x) {
+        ll r_sm = sum(r);
+        int ok = l - 1;
+        int ng = r + 1;
+        while (ok+1 < ng) {
+            int mid = (ok+ng) / 2;
+            if (r_sm - sum(mid-1) >= x) {
+                ok = mid;
+            } else {
+                ng = mid;
+            }
+        }
+        if (ok != l - 1) {
+            return ok;
+        } else {
+            return -INF;
+        }
+    }
+};
+
+ll N, Q;
+
+int main() {
+    cin.tie(0);
+    ios::sync_with_stdio(false);
+
+    cin >> N >> Q;
+    int a;
+    BIT<int> bit(N+1);
+    rep(i, 0, N) {
+        cin >> a;
+        bit.add(a, 1);
+    }
+    int idx;
+    rep(i, 0, Q) {
+        cin >> a;
+        if (a > 0) {
+            bit.add(a, 1);
+        }
+        if (a < 0) {
+            a = abs(a);
+            idx = bit.bisearch_fore(0, N, a);
+            bit.add(idx, -1);
+        }
+    }
+    int ans = 0;
+    rep(i, 0, N+1) {
+        if (bit.get(i) > 0) {
+            ans = i;
+            break;
+        }
+    }
+    print(ans);
+    return 0;
+}
 
 
 // 区間加算BIT(区間加算・区間合計取得)
@@ -813,5 +1012,189 @@ struct CombTools {
         mint num = fact[n];
         mint den = inv[r] * inv[n-r];
         return num * den;
+    }
+};
+
+
+// 遅延評価セグメント木
+template<typename T, typename E>
+struct SegmentTree {
+    typedef function<T(T, T)> F;
+    typedef function<T(T, E)> G;
+    typedef function<E(E, E)> H;
+    typedef function<E(E, int)> P;
+    int n;
+    F f;
+    G g;
+    H h;
+    P p;
+    T d1;
+    E d0;
+    vector<T> dat;
+    vector<E> laz;
+    SegmentTree(int n_, F f, G g, H h, T d1, E d0,
+            vector<T> v=vector<T>(), P p=[](E a, int b){ return a; }):
+            f(f), g(g), h(h), d1(d1), d0(d0), p(p) {
+        init(n_);
+        if (n_==(int)v.size()) build(n_, v);
+    }
+    void init(int n_) {
+        n = 1;
+        while (n<n_) n *= 2;
+        dat.clear();
+        dat.resize(2*n-1, d1);
+        laz.clear();
+        laz.resize(2*n-1, d0);
+    }
+    void build(int n_, vector<T> v) {
+        for (int i=0;i<n_;i++) dat[i+n-1] = v[i];
+        for (int i=n-2;i>=0;i--)
+            dat[i] = f(dat[i*2+1], dat[i*2+2]);
+    }
+    inline void eval(int len, int k) {
+        if (laz[k]==d0) return;
+        if (k*2+1<n*2-1) {
+            laz[k*2+1] = h(laz[k*2+1], laz[k]);
+            laz[k*2+2] = h(laz[k*2+2], laz[k]);
+        }
+        dat[k] = g(dat[k], p(laz[k], len));
+        laz[k] = d0;
+    }
+    T update(int a, int b, E x, int k, int l, int r) {
+        eval(r-l, k);
+        if (r<=a||b<=l) return dat[k];
+        if (a<=l&&r<=b) {
+            laz[k] = h(laz[k], x);
+            return g(dat[k], p(laz[k], r-l));
+        }
+        return dat[k] = f(update(a, b, x, k*2+1, l, (l+r)/2),
+                          update(a, b, x, k*2+2, (l+r)/2, r));
+    }
+    T update(int a, int b, E x) {
+        return update(a, b, x, 0, 0, n);
+    }
+    T query(int a, int b, int k, int l, int r) {
+        eval(r-l, k);
+        if(r<=a||b<=l) return d1;
+        if(a<=l&&r<=b) return dat[k];
+        T vl = query(a, b, k*2+1, l, (l+r)/2);
+        T vr = query(a, b, k*2+2, (l+r)/2, r);
+        return f(vl, vr);
+    }
+    T query(int a, int b) {
+        return query(a, b, 0, 0, n);
+    }
+};
+
+
+// 遅延評価セグメント木(非再帰)
+template<typename T, typename E>
+struct SegmentTree {
+    using F = function<T(T, T)>;
+    using G = function<T(T, E)>;
+    using H = function<E(E, E)>;
+    int n, height;
+    F f;
+    G g;
+    H h;
+    T ti;
+    E ei;
+    vector<T> dat;
+    vector<E> laz;
+    SegmentTree(F f, G g, H h, T ti, E ei):
+        f(f), g(g), h(h), ti(ti), ei(ei) {}
+
+    void init(int n_){
+        n = 1; height = 0;
+        while (n<n_) n<<=1, height++;
+        dat.assign(2*n, ti);
+        laz.assign(2*n, ei);
+    }
+
+    void build(int n_) {
+        init(n_);
+    }
+
+    void build(const vector<T> &v){
+        int n_ = v.size();
+        init(n_);
+        for (int i=0;i<n_;i++) dat[n+i] = v[i];
+        for (int i=n-1;i;i--)
+        dat[i] = f(dat[(i<<1)|0], dat[(i<<1)|1]);
+    }
+
+    inline T reflect(int k){
+        return laz[k]==ei?dat[k]:g(dat[k], laz[k]);
+    }
+
+    inline void propagate(int k){
+        if (laz[k]==ei) return;
+        laz[(k<<1)|0] = h(laz[(k<<1)|0], laz[k]);
+        laz[(k<<1)|1] = h(laz[(k<<1)|1], laz[k]);
+        dat[k] = reflect(k);
+        laz[k] = ei;
+    }
+
+    inline void thrust(int k){
+        for (int i=height;i;i--) propagate(k>>i);
+    }
+
+    inline void recalc(int k){
+        while (k>>=1)
+        dat[k] = f(reflect((k<<1)|0), reflect((k<<1)|1));
+    }
+
+    void update(int a,int b,E x){
+        if (a>=b) return;
+        thrust(a+=n);
+        thrust(b+=n-1);
+        for (int l=a,r=b+1;l<r;l>>=1,r>>=1) {
+            if (l&1) laz[l] = h(laz[l], x), l++;
+            if (r&1) --r, laz[r] = h(laz[r], x);
+        }
+        recalc(a);
+        recalc(b);
+    }
+
+    void set_val(int a, T x){
+        thrust(a+=n);
+        dat[a] = x; laz[a] = ei;
+        recalc(a);
+    }
+
+    T query(int a, int b){
+        if (a>=b) return ti;
+        thrust(a+=n);
+        thrust(b+=n-1);
+        T vl = ti, vr = ti;
+        for (int l=a,r=b+1;l<r;l>>=1,r>>=1) {
+            if (l&1) vl = f(vl, reflect(l++));
+            if (r&1) vr = f(reflect(--r), vr);
+        }
+        return f(vl, vr);
+    }
+
+    template<typename C>
+    int find(int st, C &check, T &acc, int k, int l, int r){
+        if (l+1==r) {
+            acc = f(acc, reflect(k));
+            return check(acc)?k-n:-1;
+        }
+        propagate(k);
+        int m = (l+r)>>1;
+        if (m<=st) return find(st, check, acc, (k<<1)|1, m, r);
+        if (st<=l&&!check(f(acc,dat[k]))) {
+            acc = f(acc,dat[k]);
+            return -1;
+        }
+        int vl = find(st, check, acc, (k<<1)|0, l, m);
+        if (~vl) return vl;
+        return find(st, check, acc, (k<<1)|1, m, r);
+    }
+
+    template<typename C>
+    int find(int st, C &check){
+        T acc = ti;
+        return find(st, check, acc, 1, 0, n);
     }
 };
