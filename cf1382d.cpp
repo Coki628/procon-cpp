@@ -1,4 +1,7 @@
 /**
+ * ・自力TLE。。
+ * ・再帰探索
+ * ・意外といけるパターン少なくて間に合う、とかだったらいいなぁと思ったけどダメだったー。
  */
 
 #include <bits/stdc++.h>
@@ -51,8 +54,45 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
+ll N;
+vector<ll> P, A, B;
+
+bool rec(ll i) {
+    if (i < 0) {
+        return true;
+    }
+    if (A.size() <= N && B.back() > P[i]) {
+        A.pb(P[i]);
+        if (rec(i-1)) {
+            return true;
+        }
+        A.pop_back();
+    }
+    if (B.size() <= N && A.back() > P[i]) {
+        B.pb(P[i]);
+        if (rec(i-1)) {
+            return true;
+        }
+        B.pop_back();
+    }
+    return false;
+}
+
 void solve() {
-    
+    cin >> N;
+    A.clear();
+    A.pb(INF);
+    B.clear();
+    B.pb(INF);
+    P.clear();
+    P.resize(N*2);
+    rep(i, 0, N*2) cin >> P[i];
+
+    if (rec(N*2-1)) {
+        print("YES");
+    } else {
+        print("NO");
+    }
 }
 
 int main() {

@@ -69,6 +69,7 @@ map<char, ll> Counter(string S) {
 template<typename T>
 vector<T> accumulate(vector<T> &A) {
     int N = A.size();
+    if (!N) return {};
     vector<T> res(N);
     res[0] = A[0];
     rep(i, 1, N) res[i] = res[i-1] + A[i];
@@ -78,6 +79,7 @@ vector<T> accumulate(vector<T> &A) {
 template<typename T>
 vector<T> accumulate(vector<T> &A, function<T(T, T)> func) {
     int N = A.size();
+    if (!N) return {};
     vector<T> res(N);
     res[0] = A[0];
     rep(i, 1, N) res[i] = func(res[i-1], A[i]);

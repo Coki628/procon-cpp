@@ -1,9 +1,12 @@
 /**
+ * ・終了後、色々やってみたけどWA。。
+ * ・メモ化再帰
+ * ・メモ化した。A,Bそれぞれ最後に詰めたのが何か、を持ったんだけど、これだとダメなんかなぁ。。
  */
 
 #include <bits/stdc++.h>
 using namespace std;
-
+ 
 typedef long long ll;
 typedef long double ld;
 typedef pair<ll, ll> pll;
@@ -51,8 +54,51 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
+ll N;
+vector<ll> P, A, B;
+bool memo[4007][4007];
+
+bool rec(ll i, ll j, ll k) {
+    if (i < 0) {
+        return true;
+    }
+    if (memo[j][k]) {
+        return false;
+    }
+    if (A.size() <= N && B.back() > P[i]) {
+        A.pb(P[i]);
+        if (rec(i-1, i, k)) {
+            return true;
+        }
+        A.pop_back();
+    }
+    if (B.size() <= N && A.back() > P[i]) {
+        B.pb(P[i]);
+        if (rec(i-1, j, i)) {
+            return true;
+        }
+        B.pop_back();
+    }
+    memo[j][k] = 1;
+    return false;
+}
+
 void solve() {
-    
+    cin >> N;
+    A.clear();
+    A.pb(INF);
+    B.clear();
+    B.pb(INF);
+    P.clear();
+    P.resize(N*2);
+    rep(i, 0, N*2) cin >> P[i];
+    rep(i, 0, N*2+1) rep(j, 0, N*2+1) memo[i][j] = 0; 
+
+    if (rec(N*2-1, N*2, N*2)) {
+        print("YES");
+    } else {
+        print("NO");
+    }
 }
 
 int main() {

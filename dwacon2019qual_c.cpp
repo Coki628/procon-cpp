@@ -1,4 +1,14 @@
 /**
+ * ・青diff600点自力AC！嬉しい。
+ * ・(連続でない)部分文字列
+ * ・一見、全体に対する前計算が必要そうな量にも見えるが、各クエリにO(N)かけていい。
+ * 　以下、各クエリ内での処理。
+ * ・先に後ろから「あるDからx文字以内にあるMの数」を前計算しておくと、
+ * 　前から見て行った時に、あるDが使えなくなった時にDMペアが何個使えなくなるか、
+ * 　がすぐに分かるようになる。
+ * ・あとはD,M,Cの出現に従って、Dの数,DMの数,DMCの数を加減させていけばいい。
+ * ・多分、logを落とすためなんだろうけど制約がきつい。(100万のN*75クエリ)
+ * 　pypyTLEでこっちで書き直してAC0.96秒。
  */
 
 #include <bits/stdc++.h>
@@ -51,17 +61,56 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
-void solve() {
-    
+ll N, Q, q;
+string S;
+
+ll f(ll x) {
+    // DM[i] := 位置iにあるDからx文字以内にあるMの数
+    vector<ll> DM(N);
+    ll mcnt = 0;
+    rrep(i, N-1, -1) {
+        if (i+x < N) {
+            if (S[i+x] == 'M') {
+                mcnt--;
+            }
+        }
+        if (S[i] == 'M') {
+            mcnt++;
+        } else if (S[i] == 'D') {
+            DM[i] = mcnt;
+        }
+    }
+
+    ll dcnt = 0, dmcnt = 0, dmccnt = 0;
+    rep(i, 0, N) {
+        if (i-x >= 0) {
+            if (S[i-x] == 'D') {
+                dcnt--;
+                dmcnt -= DM[i-x];
+            }
+        }
+        if (S[i] == 'D') {
+            dcnt++;
+        } else if (S[i] == 'M') {
+            dmcnt += dcnt;
+        } else if (S[i] == 'C') {
+            dmccnt += dmcnt;
+        }
+    }
+    return dmccnt;
 }
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    int T;
-    cin >> T;
-    rep(_, 0, T) solve();
-
+    cin >> N;
+    cin >> S;
+    cin >> Q;
+    rep(_, 0, Q) {
+        cin >> q;
+        ll ans = f(q);
+        print(ans);
+    }
     return 0;
 }

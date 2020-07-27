@@ -1,4 +1,12 @@
 /**
+ * 参考：https://codeforces.com/blog/entry/78504
+ * ・ギャグって聞いてたやつ一応解いておいた。3つで3重ループはネタバレしてたんだけどね。
+ * ・最初、誤読してmax(k-2, 1)をmax(k-1, 1)だと思っていたので、3つまでなの非自明だなー、
+ * 　2つまでで良さそうなのにって思ってしまったけどk-2なら3つでそれはそう。
+ * ・で、3重ループで作ったけどなんかTLE。これは各ビットループ回して取っていたからで、
+ * 　普通にどれか1つが持ってればいいなら、全体で|取ればいいだけだった。。
+ * ・きっと本番辿り着いていても、色々しくじって解けなかっただろうな。。
+ * ・計算量500^3は1億超えできついので最初からC++で。
  */
 
 #include <bits/stdc++.h>
@@ -25,7 +33,7 @@ typedef vector<vector<pll>> vvpll;
 const ll INF = 1e18;
 const ll MOD = 1e9 + 7;
 
-void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
+void print(ld out) { cout << fixed << setprecision(12) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
 template<typename T1, typename T2> void print(pair<T1, T2> out) { cout << out.first << ' ' << out.second << '\n'; }
 template<typename T> void print(vector<T> A) { rep(i, 0, A.size()) { cout << A[i]; cout << (i == A.size()-1 ? '\n' : ' '); } }
@@ -51,17 +59,25 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
-void solve() {
-    
-}
+ll N;
+vector<ll> A;
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    int T;
-    cin >> T;
-    rep(_, 0, T) solve();
+    cin >> N;
+    A.resize(N);
+    rep(i, 0, N) cin >> A[i];
 
+    ll ans = 0;
+    rep(i, 0, N) {
+        rep(j, i, N) {
+            rep(k, j, N) {
+                chmax(ans, A[i] | A[j] | A[k]);
+            }
+        }
+    }
+    print(ans);
     return 0;
 }

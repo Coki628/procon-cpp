@@ -1,4 +1,12 @@
 /**
+ * 参考：https://twitter.com/armeria_betrue/status/1271852367265148929
+ * ・自力ならず。
+ * ・グラフ、2部グラフ、閉路検出
+ * ・小さい閉路がない時、2部グラフに塗り上げるのは分かったけど、
+ * 　最小閉路をどう検出すればいいか分からなかった。
+ * ・アルメリアさんの解法が賢くて、頂点をK個までしか見なければ、
+ * 　その中で閉路があればK以内だし、なければそこまでの集合は2部グラフなので、
+ * 　どっちにしても答えを出せるというもの。これだとより小さい閉路は求める必要がない。
  */
 
 #include <bits/stdc++.h>
@@ -25,7 +33,7 @@ typedef vector<vector<pll>> vvpll;
 const ll INF = 1e18;
 const ll MOD = 1e9 + 7;
 
-void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
+void print(ld out) { cout << fixed << setprecision(12) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
 template<typename T1, typename T2> void print(pair<T1, T2> out) { cout << out.first << ' ' << out.second << '\n'; }
 template<typename T> void print(vector<T> A) { rep(i, 0, A.size()) { cout << A[i]; cout << (i == A.size()-1 ? '\n' : ' '); } }
@@ -51,17 +59,70 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
-void solve() {
-    
+ll N, M, K, cntk;
+vvl nodes;
+vector<bool> color, visited;
+vector<ll> cycle;
+
+bool dfs(ll u, ll prev, bool c) {
+    if (visited[u]) {
+        return true;
+    }
+    if (cntk >= K) {
+        return false;
+    }
+    cntk++;
+    color[u] = c;
+    visited[u] = true;
+    for (ll v : nodes[u]) {
+        if (v == prev) continue;
+        if (dfs(v, u, 1-c)) {
+            cycle.pb(u+1);
+            return true;
+        }
+    }
+    return false;
 }
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    int T;
-    cin >> T;
-    rep(_, 0, T) solve();
-
+    cin >> N >> M >> K;
+    nodes.resize(N);
+    color.resize(N);
+    visited.resize(N);
+    ll a, b;
+    rep(i, 0, M) {
+        cin >> a >> b;
+        a--; b--;
+        nodes[a].pb(b);
+        nodes[b].pb(a);
+    }
+    cntk = 0;
+    if (dfs(0, -1, 0)) {
+        print(2);
+        print(cycle.size());
+        print(cycle);
+    } else {
+        print(1);
+        vector<ll> ans1, ans2;
+        rep(i, 0, N) {
+            if (visited[i]) {
+                if (color[i]) {
+                    ans1.pb(i+1);
+                } else {
+                    ans2.pb(i+1);
+                }
+            }
+        }
+        vector<ll> ans;
+        if (ans1.size() >= ans2.size()) {
+            rep(i, 0, ceil(K, 2)) ans.pb(ans1[i]);
+        } else {
+            rep(i, 0, ceil(K, 2)) ans.pb(ans2[i]);
+        }
+        print(ans);
+    }
     return 0;
 }

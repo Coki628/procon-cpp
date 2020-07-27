@@ -1,4 +1,12 @@
 /**
+ * ・ちょっと思い立ったので試してみた。
+ * ・メモ化再帰、枝刈り
+ * ・この先が足りるかどうかを適切にチェックしていけば、取りうる状態数は多くない。
+ * 　無理と確定したら枝刈りする。
+ * ・公式解より直感的っぽいこの方針でも解けないかなーと思ってやってみた。。
+ * ・さすがに多少は分岐があるからか、全探索はTLE。メモ化したらAC。
+ * ・新たな知見として、unordered_mapはpairをキーにできない。mapはできるのにね。
+ * 　(Boost使えばできるらしい)
  */
 
 #include <bits/stdc++.h>
@@ -51,17 +59,47 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
-void solve() {
-    
+ll N;
+vector<ll> A;
+map<pll, ll> memo[2];
+
+ll rec(ll i, ll j, bool f) {
+    if (memo[f].find({i, j}) != memo[f].end()) {
+        return memo[f][{i, j}];
+    }
+    // 終了時
+    if (i == N) {
+        // ぴったりfloor(N, 2)ならOK
+        if (j == N/2) {
+            return 0;
+        } else {
+            return -INF;
+        }
+    }
+    // この先で選べる最大数
+    ll k = ceil(N-i, 2);
+    // 今までに選んだ数と合わせて足りなければこの道はNG確定
+    if (j+k < N/2) {
+        return -INF;
+    }
+    ll res = -INF;
+    chmax(res, rec(i+1, j, 0));
+    if (!f) {
+        chmax(res, rec(i+1, j+1, 1) + A[i]);
+    }
+    memo[f][{i, j}] = res;
+    return res;
 }
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    int T;
-    cin >> T;
-    rep(_, 0, T) solve();
+    cin >> N;
+    A.resize(N);
+    rep(i, 0, N) cin >> A[i];
 
+    ll ans = rec(0, 0, 0);
+    print(ans);
     return 0;
 }

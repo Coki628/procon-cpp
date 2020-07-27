@@ -2,6 +2,7 @@
  * ・自力WA。。
  * ・どのみちTLEなんだけど、内ループを集合管理。
  * ・TLEは分かるんだけど、WAはなんでか分からん。どこがバグってんだろ。。
+ * →分かった。bitsetの使い方間違ってた。1<<iとかじゃなくて.set(i)ってする。これでTLE。
  */
 
 #include <bits/stdc++.h>
@@ -134,11 +135,11 @@ int main() {
         rep(j, 0, W) {
             cin >> grid[i][j];
             if (grid[i][j] == 0) {
-                J[i] |= 1<<j;
+                J[i].set(j);
             } else if (grid[i][j] == 1) {
-                O[i] |= 1<<j;
+                O[i].set(j);
             } else {
-                I[i] |= 1<<j;
+                I[i].set(j);
             }
         }
     }

@@ -25,7 +25,7 @@ typedef vector<vector<pll>> vvpll;
 const ll INF = 1e18;
 const ll MOD = 1e9 + 7;
 
-void print(ld out) { cout << fixed << setprecision(12) << out << '\n'; }
+void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
 template<typename T1, typename T2> void print(pair<T1, T2> out) { cout << out.first << ' ' << out.second << '\n'; }
 template<typename T> void print(vector<T> A) { rep(i, 0, A.size()) { cout << A[i]; cout << (i == A.size()-1 ? '\n' : ' '); } }

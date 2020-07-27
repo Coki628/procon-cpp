@@ -1,4 +1,6 @@
 /**
+ * ・ちょっと思い当たる最適化を施してみたけどダメ。まだTLE。。
+ * ・25ビット3300万*2はC++なら行けなくないような気がするんだけどなぁ。
  */
 
 #include <bits/stdc++.h>
@@ -51,17 +53,62 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
-void solve() {
-    
-}
+int N, K;
+vector<int> A, A1, A2;
+int P1[33554440], P2[33554440], C0[2507], C1[2507];
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    int T;
-    cin >> T;
-    rep(_, 0, T) solve();
+    cin >> N >> K;
+    A.resize(N);
+    rep(i, 0, N) cin >> A[i];
+    // 総和0を平均KとするためにKを引く
+    rep(i, 0, N) A[i] -= K;
+    // 半分全列挙
+    rep(i, 0, N/2) A1.pb(A[i]);
+    rep(i, N/2, N) A2.pb(A[i]);
+    
+    // それぞれの全組み合わせ
+    int N1 = A1.size();
+    rep(S, 0, 1<<N1) {
+        int p = 0;
+        rep(i, 0, N1) {
+            if (S>>i & 1) {
+                p += A1[i];
+            }
+        }
+        P1[S] = p;
+    }
+    int N2 = A2.size();
+    rep(S, 0, 1<<N2) {
+        int p = 0;
+        rep(i, 0, N2) {
+            if (S>>i & 1) {
+                p += A2[i];
+            }
+        }
+        P2[S] = p;
+    }
 
+    // 総和0になるペアの数を求める
+    rep(i, 0, 1<<N2) {
+        if (P2[i] <= 0) {
+            C0[-P2[i]]++;
+        } else {
+            C1[P2[i]]++;
+        }
+    }
+    ll ans = 0;
+    rep(i, 0, 1<<N1) {
+        if (P1[i] >= 0) {
+            ans += C0[P1[i]];
+        } else {
+            ans += C1[-P1[i]];
+        }
+    }
+    // どちらも1つも選ばない分の1を引く
+    print(ans - 1);
     return 0;
 }

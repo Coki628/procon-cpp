@@ -1,4 +1,9 @@
 /**
+ * ・なんとか自力AC！終了5分前通せた！
+ * ・有向グラフ、DFS、閉路検出
+ * ・末端から戻ってくる時に自分に向けて辺を張れば、依存性を守れる。
+ * ・通せたから良かったけど、ちょこちょこバグらせて大変だった。。
+ * ・他のみんなの見たら、トポソしてその順に従って繋いでた。確かにそっちのが楽そう。。
  */
 
 #include <bits/stdc++.h>
@@ -51,8 +56,77 @@ inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
+ll N, M;
+vvl nodes;
+vvl nodes2;
+map<pll, ll> D;
+vector<ll> memo;
+vector<pll> ans;
+
+bool dfs(ll u) {
+    if (memo[u] == 2) {
+        return true;
+    // 閉路が見つかれば一発アウト
+    } else if (memo[u] == 1) {
+        return false;
+    }
+    memo[u] = 1;
+    for (ll v : nodes[u]) {
+        if (!dfs(v)) {
+            return false;
+        }
+    }
+    // uより先を調べ終わったら、uに向けての辺を張る
+    for (ll v : nodes2[u]) {
+        if (memo[v] != 2) {
+            ans[D[{v, u}]] = {v+1, u+1};
+        }
+    }
+    memo[u] = 2;
+    return true;
+}
+
 void solve() {
-    
+    cin >> N >> M;
+    nodes.clear();
+    nodes2.clear();
+    memo.clear();
+    ans.clear();
+    D.clear();
+    nodes.resize(N);
+    nodes2.resize(N);
+    memo.resize(N);
+    ans.resize(M);
+    ll t, a, b;
+    rep(i, 0, M) {
+        cin >> t >> a >> b;
+        a--; b--;
+        if (t) {
+            nodes[a].pb(b);
+            ans[i] = {a+1, b+1};
+        } else {
+            nodes2[a].pb(b);
+            nodes2[b].pb(a);
+            D[{a, b}] = i;
+            D[{b, a}] = i;
+        }
+    }
+
+    bool ok = 1;
+    rep(i, 0, N) {
+        if (!dfs(i)) {
+            ok = 0;
+            break;
+        }
+    }
+    if (ok) {
+        print("YES");
+        for (auto a : ans) {
+            print(a);
+        }
+    } else {
+        print("NO");
+    }
 }
 
 int main() {
