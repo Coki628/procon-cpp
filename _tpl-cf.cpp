@@ -22,8 +22,9 @@ typedef vector<vector<pll>> vvpll;
 #define pb push_back
 #define tostr to_string
 #define mkp make_pair
-const ll INF = 1e18;
-const ll MOD = 1e9 + 7;
+#define list2d(name, N, M, type, init) vector<vector<type>> name(N, vector<type>(M, init))
+const ll INF = LONG_LONG_MAX;
+const ll MOD = 1000000007;
 
 void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
@@ -39,14 +40,16 @@ ll max(vector<ll> A) { ll res = -INF; for (ll a: A) chmax(res, a); return res; }
 ll min(vector<ll> A) { ll res = INF; for (ll a: A) chmin(res, a); return res; }
 
 ll toint(string s) { ll res = 0; for (char c : s) { res *= 10; res += (c - '0'); } return res; }
-int toint(char c) { return c - '0'; }
-char tochar(int i) { return '0' + i; }
+// 数字なら'0'、アルファベットなら'a'みたいに使い分ける
+// int toint(char c) { return c - '0'; }
+// char tochar(int i) { return '0' + i; }
 
 inline ll pow(int x, ll n) { ll res = 1; rep(_, 0, n) res *= x; return res; }
 inline ll pow(ll x, ll n, int mod) { ll res = 1; while (n > 0) { if (n & 1) { res = (res * x) % mod; } x = (x * x) % mod; n >>= 1; } return res; }
 
 inline ll floor(ll a, ll b) { if (a < 0) { return (a-b+1) / b; } else { return a / b; } }
 inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a / b; } }
+pll divmod(ll a, ll b) { ll d = a / b; ll m = a % b; return {d, m}; }
 
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
@@ -61,7 +64,7 @@ int main() {
 
     int T;
     cin >> T;
-    rep(_, 0, T) solve();
+    while(T--) solve();
 
     return 0;
 }

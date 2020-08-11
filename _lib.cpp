@@ -19,6 +19,7 @@ typedef vector<vector<pll>> vvpll;
 #define pb push_back
 #define tostr to_string
 #define mkp make_pair
+#define list2d(name, N, M, type, init) vector<vector<type>> name(N, vector<type>(M, init))
 const ll INF = 1e18;
 const ll MOD = 1e9 + 7;
 
@@ -219,6 +220,20 @@ vector<vector<T>> warshall_floyd(vector<vector<T>> G) {
         }
     }
     return G;
+}
+
+// グリッド転置
+template<typename T>
+void transpose(vector<vector<T>> &grid) {
+    int H = grid.size();
+    int W = grid[0].size();
+    list2d(res, W, H, T, 0);
+    rep(i, 0, H) {
+        rep(j, 0, W) {
+            res[j][i] = grid[i][j];
+        }
+    }
+    swap(res, grid);
 }
 
 
@@ -459,27 +474,35 @@ struct SegmentTree {
 };
 
 
-// TODO: バグってることが発覚したので、このC++版もそのうち直す。
 template<typename Monoid>
 struct SegmentTreeIndex {
     using F = function<Monoid(Monoid, Monoid)>;
-    
+
     int sz;
-    vector<Monoid> seg;
-    vector<int> index;
-    
+    vector<pair<Monoid, int>> seg;
+
     const F f;
     const Monoid M1;
-    
+
+    pair<Monoid, int> compare(pair<Monoid, int> a, pair<Monoid, int> b) {
+        if (a.first == b.first) {
+            // 同値はindexが小さい方優先
+            if (a.second <= b.second) {
+                return a;
+            } else {
+                return b;
+            }
+        } else if (f(a.first, b.first) == a.first) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
     SegmentTreeIndex(int n, const F f, const Monoid &M1) : f(f), M1(M1) {
         sz = 1;
         while(sz < n) sz <<= 1;
-        seg.assign(2 * sz, M1);
-        index.assign(2 * sz, -1);
-        // 1段目(最下段)の初期化
-        rep(i, 0, sz) index[i+sz] = i;
-        // 2段目以降の初期化(全部左の子の値に更新)
-        rrep(i, sz-1, -1) index[i] = index[i*2];
+        seg.assign(2 * sz, {M1, -1});
     }
 
     SegmentTreeIndex(const F f, const Monoid &M1) : f(f), M1(M1) {}
@@ -487,76 +510,46 @@ struct SegmentTreeIndex {
     void resize(int n) {
         sz = 1;
         while(sz < n) sz <<= 1;
-        seg.assign(2 * sz, M1);
-        index.assign(2 * sz, -1);
-        // 1段目(最下段)の初期化
-        rep(i, 0, sz) index[i+sz] = i;
-        // 2段目以降の初期化(全部左の子の値に更新)
-        rrep(i, sz-1, -1) index[i] = index[i*2];
+        seg.assign(2 * sz, {M1, -1});
     }
-    
+
     void set(int k, const Monoid &x) {
-        seg[k+sz] = x;
-        index[k+sz] = k;
+        seg[k+sz] = {x, k};
     }
-    
+
     void build() {
         for(int k = sz - 1; k > 0; k--) {
-            // 左の子の値を優先して更新
-            if (f(seg[2*k], seg[2*k+1]) == seg[2*k]) {
-                seg[k] = seg[2*k];
-                index[k] = index[2*k];
-            } else {
-                seg[k] = seg[2*k+1];
-                index[k] = index[2*k+1];
-            }
-            
+            seg[k] = compare(seg[2*k], seg[2*k+1]);            
         }
     }
 
     void update(int k, const Monoid &x) {
         k += sz;
-        seg[k] = x;
+        seg[k] = {x, k-sz};
         while(k >>= 1) {
-            // 左の子の値を優先して更新
-            if (f(seg[2*k], seg[2*k+1]) == seg[2*k]) {
-                seg[k] = seg[2*k];
-                index[k] = index[2*k];
-            } else {
-                seg[k] = seg[2*k+1];
-                index[k] = index[2*k+1];
-            }
-        }
-    }
- 
-    pair<Monoid, int> query(int a, int b) {
-        pair<Monoid, int> L = mkp(M1, -1), R = mkp(M1, -1);
-        for(a += sz, b += sz; a < b; a >>= 1, b >>= 1) {
-            if (a & 1) {
-                if (f(seg[a], L.first) == seg[a]) {
-                    L.first = seg[a];
-                    L.second = index[a];
-                }
-                a++;
-            }
-            if (b & 1) {
-                b--;
-                if (f(R.first, seg[b]) != R.first) {
-                    R.first = seg[b];
-                    R.second = index[b];
-                }
-            }
-        }
-        // 左との一致を優先する
-        if (f(L.first, R.first) == L.first) {
-            return L;
-        } else {
-            return R;
+            seg[k] = compare(seg[2*k], seg[2*k+1]);
         }
     }
 
+    void add(int k, const Monoid &x) {
+        update(k, seg[k+sz].first + x);
+    }
+
+    pair<Monoid, int> query(int a, int b) {
+        Monoid L = M1, R = M1;
+        for(a += sz, b += sz; a < b; a >>= 1, b >>= 1) {
+            if(a & 1) L = compare(L, seg[a++]);
+            if(b & 1) R = compare(seg[--b], R);
+        }
+        return compare(L, R);
+    }
+
     Monoid operator[](const int &k) const {
-        return seg[k+sz];
+        return seg[k+sz].first;
+    }
+
+    pair<Monoid, int> all() {
+        return seg[1];
     }
 };
 
@@ -1200,3 +1193,24 @@ struct SegmentTree {
         return find(st, check, acc, 1, 0, n);
     }
 };
+
+
+// なんかこれ速いhashmapらしい
+// #include <ext/pb_ds/assoc_container.hpp>
+// using namespace __gnu_pbds;
+struct custom_hash {
+    // https://codeforces.com/blog/entry/62393
+    static uint64_t splitmix64(uint64_t x) {
+        // http://xorshift.di.unimi.it/splitmix64.c
+        x += 0x9e3779b97f4a7c15;
+        x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9;
+        x = (x ^ (x >> 27)) * 0x94d049bb133111eb;
+        return x ^ (x >> 31);
+    }
+
+    size_t operator()(uint64_t x) const {
+        static const uint64_t FIXED_RANDOM = chrono::steady_clock::now().time_since_epoch().count();
+        return splitmix64(x + FIXED_RANDOM);
+    }
+};
+// gp_hash_table<ll,ll,custom_hash> mp;
