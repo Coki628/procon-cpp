@@ -1,12 +1,10 @@
 /**
- * 参考：https://atcoder.jp/contests/agc047/editorial/43
- * 　　　https://algo-logic.info/trie-tree/
- * ・トライ木
- * ・公式解と、kamiさんのトライ木の解説を元に、こっちの方針でも解いた。
- * ・木構造だしDFSみたいに舐めてくのかと思ったら違って、単語毎に毎回根から葉まで見に行くんだね。
- * 　まあこれはその時やりたいことによって変わるのかもしれないけど。
- * ・具体的にどんな感じでやったかはソース内コメント参照。
+ * ・なんか公式によるとTrieで解けるそうだが、いまいち理解が進まなかったので保留。。。
  */
+
+// #pragma GCC target("avx2")
+// #pragma GCC optimize("O3")
+// #pragma GCC optimize("unroll-loops")
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -34,6 +32,7 @@ const ll INF = LONG_LONG_MAX;
 const ll MOD = 1000000007;
 
 void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
+void print(double out) { cout << fixed << setprecision(15) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
 template<typename T1, typename T2> void print(pair<T1, T2> out) { cout << out.first << ' ' << out.second << '\n'; }
 template<typename T> void print(vector<T> A) { rep(i, 0, A.size()) { cout << A[i]; cout << (i == A.size()-1 ? '\n' : ' '); } }
@@ -47,8 +46,9 @@ ll max(vector<ll> A) { ll res = -INF; for (ll a: A) chmax(res, a); return res; }
 ll min(vector<ll> A) { ll res = INF; for (ll a: A) chmin(res, a); return res; }
 
 ll toint(string s) { ll res = 0; for (char c : s) { res *= 10; res += (c - '0'); } return res; }
-int toint(char c) { return c - '0'; }
-char tochar(int i) { return '0' + i; }
+// 数字なら'0'、アルファベットなら'a'みたいに使い分ける
+// int toint(char c) { return c - '0'; }
+// char tochar(int i) { return '0' + i; }
 
 inline ll pow(int x, ll n) { ll res = 1; rep(_, 0, n) res *= x; return res; }
 inline ll pow(ll x, ll n, int mod) { ll res = 1; while (n > 0) { if (n & 1) { res = (res * x) % mod; } x = (x * x) % mod; n >>= 1; } return res; }
@@ -135,56 +135,25 @@ struct Trie {
     }
 };
 
-ll N;
-vector<string> A;
+ll N, K = 32;
+vector<int> A;
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    Trie<26, 'a'> trie;
-    string s;
     cin >> N;
-    rep(i, 0, N) {
-        cin >> s;
-        reverse(s.begin(), s.end());
-        trie.insert(s);
-        A.pb(s);
-    }
+    A.resize(N);
+    rep(i, 0, N) cin >> A[i];
 
-    int sz, cur, nxt;
-    set<int> se;
-    vector<int> tmp;
-    ll ans = 0;
-    for (string s : A) {
-        sz = s.size();
-        cur = 0;
-        tmp.clear();
-        tmp.pb(0);
-        se.clear();
-        // 単語の末尾までの頂点を辿る
-        rep(i, 0, sz) {
-            cur = trie.nodes[cur].next[s[i]-'a'];
-            tmp.pb(cur);
+    Trie<2, '0'> trie;
+    rep(i, 0, N) {
+        string s;
+        rrep(k, K-1, -1) {
+            bool b = (A[i]>>k) & 1;
+            s += '0' + b;
         }
-        // 後ろから確認していく
-        rrep(i, sz, -1) {
-            cur = tmp[i];
-            for (int c : se) {
-                // 文字cがこの次の文字として現れるなら
-                if (trie.nodes[cur].next[c] != -1) {
-                    nxt = trie.nodes[cur].next[c];
-                    // そこが末尾となる単語があるか確認する
-                    if (!trie.nodes[nxt].accept.empty()) {
-                        ans++;
-                    }
-                }
-            }
-            // 今回の文字を集合に追加
-            if (i != 0) se.insert(s[i-1]-'a');
-        }
+        trie.insert(s, i);
     }
-    ans -= N;
-    print(ans);
     return 0;
 }

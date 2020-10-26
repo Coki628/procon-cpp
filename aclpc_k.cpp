@@ -1,7 +1,9 @@
 /**
- * ・遅延評価セグメント木
- * ・区間和取得・区間更新
- * ・要素Tの単位元は0、作用素Eの単位元はINFなど(要素が取りうる範囲外の値にする)
+ * 参考：https://atcoder.jp/contests/practice2/editorial/100
+ * ・遅延セグ木
+ * ・取得は区間和、更新はax+bをやる。
+ * ・ax+bのマージはARC008Dでの取得用関数のマージとだいたい同じ感じ。合成関数。
+ * ・区間和を取りたい時は値と一緒に要素数を持たせるといい感じにいける。
  */
 
 #include <bits/stdc++.h>
@@ -25,10 +27,12 @@ typedef vector<vector<pll>> vvpll;
 #define pb push_back
 #define tostr to_string
 #define mkp make_pair
-const ll INF = 1e18;
-const ll MOD = 1e9 + 7;
+#define list2d(name, N, M, type, init) vector<vector<type>> name(N, vector<type>(M, init))
+const ll INF = LONG_LONG_MAX;
+const ll MOD = 998244353;
 
-void print(ld out) { cout << fixed << setprecision(12) << out << '\n'; }
+void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
+void print(double out) { cout << fixed << setprecision(15) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
 template<typename T1, typename T2> void print(pair<T1, T2> out) { cout << out.first << ' ' << out.second << '\n'; }
 template<typename T> void print(vector<T> A) { rep(i, 0, A.size()) { cout << A[i]; cout << (i == A.size()-1 ? '\n' : ' '); } }
@@ -42,14 +46,16 @@ ll max(vector<ll> A) { ll res = -INF; for (ll a: A) chmax(res, a); return res; }
 ll min(vector<ll> A) { ll res = INF; for (ll a: A) chmin(res, a); return res; }
 
 ll toint(string s) { ll res = 0; for (char c : s) { res *= 10; res += (c - '0'); } return res; }
-int toint(char c) { return c - '0'; }
-char tochar(int i) { return '0' + i; }
+// 数字なら'0'、アルファベットなら'a'みたいに使い分ける
+// int toint(char c) { return c - '0'; }
+// char tochar(int i) { return '0' + i; }
 
 inline ll pow(int x, ll n) { ll res = 1; rep(_, 0, n) res *= x; return res; }
 inline ll pow(ll x, ll n, int mod) { ll res = 1; while (n > 0) { if (n & 1) { res = (res * x) % mod; } x = (x * x) % mod; n >>= 1; } return res; }
 
 inline ll floor(ll a, ll b) { if (a < 0) { return (a-b+1) / b; } else { return a / b; } }
 inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a / b; } }
+pll divmod(ll a, ll b) { ll d = a / b; ll m = a % b; return {d, m}; }
 
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
@@ -124,28 +130,43 @@ struct SegmentTree {
 };
 
 ll N, Q;
-// 区間和取得・区間更新
-// 要素Tの単位元は0、作用素Eの単位元はINFなど(要素が取りうる範囲外の値にする)
-auto f = [](ll a, ll b) -> ll { return a + b; };
-auto g = [](ll a, ll b) -> ll { return b; };
-auto p = [](ll a, ll b) -> ll { return a * b; };
+vector<pll> A;
+
+// 区間和取得・区間更新(ax+b)
+auto f = [](pll a, pll b) -> pll { return { (a.first+b.first) % MOD, (a.second+b.second) % MOD }; };
+auto g = [](pll a, pll b) -> pll { return { ((a.first*b.first) % MOD + (a.second*b.second) % MOD) % MOD, a.second }; };
+auto h = [](pll a, pll b) -> pll { return { (a.first*b.first) % MOD, ((a.second*b.first) % MOD + b.second) % MOD }; };
+
+// 合成関数
+// h(h(x))
+// c*h(x) + d
+// c*(ax+b) + d
+// c*ax + c*b + d
+// {c*a, c*b + d}
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
     cin >> N >> Q;
-    SegmentTree<ll, ll> seg(N, f, g, g, 0, INT_MAX, vector<ll>(N, 0), p);
+    A.resize(N);
+    rep(i, 0, N) {
+        cin >> A[i].first;
+        A[i].second = 1;
+    }
 
-    ll op, s, t, x;
+    SegmentTree<pll, pll> seg(N, f, g, h, {0, 0}, {1, 0}, A);
+    bool t;
+    ll l, r, b, c, ans;
     rep(i, 0, Q) {
-        cin >> op;
-        if (op == 0) {
-            cin >> s >> t >> x;
-            seg.update(s, t+1, x);
+        cin >> t;
+        if (t) {
+            cin >> l >> r;
+            ans = seg.query(l, r).first;
+            print(ans);
         } else {
-            cin >> s >> t;
-            print(seg.query(s, t+1));
+            cin >> l >> r >> b >> c;
+            seg.update(l, r, {b, c});
         }
     }
     return 0;

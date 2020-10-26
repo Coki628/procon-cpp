@@ -1,15 +1,15 @@
 /**
- * ・ちょっと思い当たる最適化を施してみたけどダメ。まだTLE。。
- * ・25ビット3300万*2はC++なら行けなくないような気がするんだけどなぁ。
- * ・さらにちょっと修正。まあダメだけど。
- * ・QCFium法も入れてみたけどダメ。
- * 　考えてみたら内側で*25してるの考えたら8億以上とかになるし、
- * 　同じやつ2回やってるのもあるから、そりゃーきついか。。
+ * ・自力AC！本日唯一の見せ場だった。。
+ * ・前計算、二分探索
+ * ・最近、ゆきこで近い考え方のやつをやってたのが良かった。(yukico800)
+ * ・愚直だと4重ループになって、制約は2重ループまで許してる。
+ * 　これは、前に来る2つペアの出現位置を取っておけば、後ろの2つペアを作った時、
+ * 　その後ろ2つペアと組める前2つペアがいくつあるのか確認できる。
+ * ・実装上は約3000^2/2=450万のループの内側で、mapとにぶたんでlog2つ乗ってるのでかなりきつめ。
+ * 　AC0.98秒。(制約は2秒だったからギリではないけど)
+ * ・各回のmapへのアクセスを3回やってたのを1回にしたらAC0.65秒。いいね。
+ * ・ってやってたらハックされた。。。MLEって。。
  */
-
-#pragma GCC target("avx2")
-#pragma GCC optimize("O3")
-#pragma GCC optimize("unroll-loops")
 
 #include <bits/stdc++.h>
 using namespace std;
@@ -32,8 +32,9 @@ typedef vector<vector<pll>> vvpll;
 #define pb push_back
 #define tostr to_string
 #define mkp make_pair
-const ll INF = 1e18;
-const ll MOD = 1e9 + 7;
+#define list2d(name, N, M, type, init) vector<vector<type>> name(N, vector<type>(M, init))
+const ll INF = LONG_LONG_MAX;
+const ll MOD = 1000000007;
 
 void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
@@ -49,69 +50,57 @@ ll max(vector<ll> A) { ll res = -INF; for (ll a: A) chmax(res, a); return res; }
 ll min(vector<ll> A) { ll res = INF; for (ll a: A) chmin(res, a); return res; }
 
 ll toint(string s) { ll res = 0; for (char c : s) { res *= 10; res += (c - '0'); } return res; }
-int toint(char c) { return c - '0'; }
-char tochar(int i) { return '0' + i; }
+// 数字なら'0'、アルファベットなら'a'みたいに使い分ける
+// int toint(char c) { return c - '0'; }
+// char tochar(int i) { return '0' + i; }
 
 inline ll pow(int x, ll n) { ll res = 1; rep(_, 0, n) res *= x; return res; }
 inline ll pow(ll x, ll n, int mod) { ll res = 1; while (n > 0) { if (n & 1) { res = (res * x) % mod; } x = (x * x) % mod; n >>= 1; } return res; }
 
 inline ll floor(ll a, ll b) { if (a < 0) { return (a-b+1) / b; } else { return a / b; } }
 inline ll ceil(ll a, ll b) { if (a >= 0) { return (a+b-1) / b; } else { return a / b; } }
+pll divmod(ll a, ll b) { ll d = a / b; ll m = a % b; return {d, m}; }
 
 int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
-int N, K;
-vector<int> A, A1, A2;
-int C0[2507], C1[2507];
+ll N;
+vector<ll> A;
+map<pll, vector<ll>> D;
+
+void solve() {
+    A.clear();
+    D.clear();
+    cin >> N;
+    A.resize(N);
+    rep(i, 0, N) cin >> A[i];
+
+    rep(i, 0, N) {
+        rep(j, i+1, N) {
+            D[{A[i], A[j]}].pb(j);
+        }
+    }
+    for (auto &v : D) {
+        sort(v.second.begin(), v.second.end());
+    }
+    ll ans = 0;
+    rep(k, 0, N) {
+        rep(l, k+1, N) {
+            auto &v = D[{A[k], A[l]}];
+            ll idx = lower_bound(v.begin(), v.end(), k) - v.begin();
+            ans += idx;
+        }
+    }
+    print(ans);
+}
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
-    cin >> N >> K;
-    A.resize(N);
-    rep(i, 0, N) cin >> A[i];
-    // 総和0を平均KとするためにKを引く
-    rep(i, 0, N) A[i] -= K;
-    // 半分全列挙
-    rep(i, 0, N/2) A1.pb(A[i]);
-    rep(i, N/2, N) A2.pb(A[i]);
-    
-    // それぞれの全組み合わせ
-    int N1 = A1.size();
-    rep(S, 0, 1<<N1) {
-        int p = 0;
-        rep(i, 0, N1) {
-            if (S>>i & 1) {
-                p += A1[i];
-            }
-        }
-        if (p <= 0) {
-            C0[-p]++;
-        } else {
-            C1[p]++;
-        }
-    }
-    int N2 = A2.size();
-    ll ans = 0;
-    rep(S, 0, 1<<N2) {
-        int p = 0;
-        rep(i, 0, N2) {
-            if (S>>i & 1) {
-                p += A2[i];
-            }
-        }
-        // 総和0になるペアの数を求める
-        if (p >= 0) {
-            ans += C0[p];
-        } else {
-            ans += C1[-p];
-        }
-    }
+    int T;
+    cin >> T;
+    while(T--) solve();
 
-    // どちらも1つも選ばない分の1を引く
-    ans--;
-    print(ans);
     return 0;
 }
