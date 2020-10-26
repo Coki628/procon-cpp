@@ -1,6 +1,10 @@
 /**
  */
 
+// #pragma GCC target("avx2")
+// #pragma GCC optimize("O3")
+// #pragma GCC optimize("unroll-loops")
+
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -27,6 +31,7 @@ const ll INF = LONG_LONG_MAX;
 const ll MOD = 1000000007;
 
 void print(ld out) { cout << fixed << setprecision(15) << out << '\n'; }
+void print(double out) { cout << fixed << setprecision(15) << out << '\n'; }
 template<typename T> void print(T out) { cout << out << '\n'; }
 template<typename T1, typename T2> void print(pair<T1, T2> out) { cout << out.first << ' ' << out.second << '\n'; }
 template<typename T> void print(vector<T> A) { rep(i, 0, A.size()) { cout << A[i]; cout << (i == A.size()-1 ? '\n' : ' '); } }

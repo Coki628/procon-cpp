@@ -357,7 +357,7 @@ struct PartiallyPersistentUnionFind {
 
 
 template<typename Monoid>
-struct SegmentTree {
+struct SegTree {
     using F = function<Monoid(Monoid, Monoid)>;
     
     int sz;
@@ -366,13 +366,13 @@ struct SegmentTree {
     const F f;
     const Monoid M1;
     
-    SegmentTree(int n, const F f, const Monoid &M1) : f(f), M1(M1) {
+    SegTree(int n, const F f, const Monoid &M1) : f(f), M1(M1) {
         sz = 1;
         while(sz < n) sz <<= 1;
         seg.assign(2 * sz, M1);
     }
 
-    SegmentTree(const F f, const Monoid &M1) : f(f), M1(M1) {}
+    SegTree(const F f, const Monoid &M1) : f(f), M1(M1) {}
 
     void resize(int n) {
         sz = 1;
@@ -419,13 +419,13 @@ struct SegmentTree {
         return seg[1];
     }
 
-    // 区間[l,r]で左からx番目の値がある位置
-    ll bisearch_fore(ll l, ll r, ll x) {
+    // 区間[l,r]で左から最初にxに対して比較の条件を満たすような値が出現する位置
+    ll bisearch_fore(ll l, ll r, ll x, function<bool(ll, ll)> compare) {
         ll ok = r + 1;
         ll ng = l - 1;
         while (ng+1 < ok) {
             ll mid = (ok+ng) / 2;
-            if (query(l, mid+1) >= x) {
+            if (compare(query(l, mid+1), x)) {
                 ok = mid;
             } else {
                 ng = mid;
@@ -438,13 +438,13 @@ struct SegmentTree {
         }
     }
 
-    // 区間[l,r]で右からx番目の値がある位置
-    ll bisearch_back(ll l, ll r, ll x) {
+    // 区間[l,r]で右から最初にxに対して比較の条件を満たすような値が出現する位置
+    ll bisearch_back(ll l, ll r, ll x, function<bool(ll, ll)> compare) {
         ll ok = l - 1;
         ll ng = r + 1;
         while (ok+1 < ng) {
             ll mid = (ok+ng) / 2;
-            if (query(mid, r+1) >= x) {
+            if (compare(query(mid, r+1), x)) {
                 ok = mid;
             } else {
                 ng = mid;
@@ -456,26 +456,13 @@ struct SegmentTree {
             return -INF;
         }
     }
-
-    // 左から見て、条件を満たす値が最初に出現する位置
-    ll bisearch_left(ll l, ll r, function<bool(ll)> func) {
-        ll ok = r;
-        ll ng = l;
-        while (ng+1 < ok) {
-            ll mid = (ok+ng) / 2;
-            if (func(mid)) {
-                ok = mid;
-            } else {
-                ng = mid;
-            }
-        }
-        return ok;
-    }
+    // 使用例
+    // stmx.bisearch_back(l, r, x, greater<ll>());
 };
 
 
 template<typename Monoid>
-struct SegmentTreeIndex {
+struct SegTreeIndex {
     using F = function<Monoid(Monoid, Monoid)>;
 
     int sz;
@@ -499,13 +486,13 @@ struct SegmentTreeIndex {
         }
     }
 
-    SegmentTreeIndex(int n, const F f, const Monoid &M1) : f(f), M1(M1) {
+    SegTreeIndex(int n, const F f, const Monoid &M1) : f(f), M1(M1) {
         sz = 1;
         while(sz < n) sz <<= 1;
         seg.assign(2 * sz, {M1, -1});
     }
 
-    SegmentTreeIndex(const F f, const Monoid &M1) : f(f), M1(M1) {}
+    SegTreeIndex(const F f, const Monoid &M1) : f(f), M1(M1) {}
 
     void resize(int n) {
         sz = 1;
@@ -636,7 +623,7 @@ struct SparseTable {
             return -INF;
         }
     }
-    // 仕様例
+    // 使用例
     // stmx.bisearch_back(l, r, x, greater<ll>());
 };
 
@@ -729,43 +716,6 @@ struct BIT {
         }
     }
 };
-
-ll N, Q;
-
-int main() {
-    cin.tie(0);
-    ios::sync_with_stdio(false);
-
-    cin >> N >> Q;
-    int a;
-    BIT<int> bit(N+1);
-    rep(i, 0, N) {
-        cin >> a;
-        bit.add(a, 1);
-    }
-    int idx;
-    rep(i, 0, Q) {
-        cin >> a;
-        if (a > 0) {
-            bit.add(a, 1);
-        }
-        if (a < 0) {
-            a = abs(a);
-            idx = bit.bisearch_fore(0, N, a);
-            bit.add(idx, -1);
-        }
-    }
-    int ans = 0;
-    rep(i, 0, N+1) {
-        if (bit.get(i) > 0) {
-            ans = i;
-            break;
-        }
-    }
-    print(ans);
-    return 0;
-}
-
 
 // 区間加算BIT(区間加算・区間合計取得)
 struct BIT2 {
@@ -979,13 +929,13 @@ struct ModInt {
 using mint = ModInt<MOD>;
 
 
-struct CombTools {
+struct ModTools {
 
     int MAX;
     const int MOD;
     vector<mint> fact, inv;
 
-    CombTools(int MOD) : MOD(MOD) {};
+    ModTools(int MOD) : MOD(MOD) {};
 
     void build(int mx) {
         MAX = ++mx;
@@ -1013,7 +963,7 @@ struct CombTools {
 
 // 遅延評価セグメント木
 template<typename T, typename E>
-struct SegmentTree {
+struct LazySegTree {
     typedef function<T(T, T)> F;
     typedef function<T(T, E)> G;
     typedef function<E(E, E)> H;
@@ -1027,7 +977,7 @@ struct SegmentTree {
     E d0;
     vector<T> dat;
     vector<E> laz;
-    SegmentTree(int n_, F f, G g, H h, T d1, E d0,
+    LazySegTree(int n_, F f, G g, H h, T d1, E d0,
             vector<T> v=vector<T>(), P p=[](E a, int b){ return a; }):
             f(f), g(g), h(h), d1(d1), d0(d0), p(p) {
         init(n_);
@@ -1084,7 +1034,7 @@ struct SegmentTree {
 
 // 遅延評価セグメント木(非再帰)
 template<typename T, typename E>
-struct SegmentTree {
+struct LazySegTree {
     using F = function<T(T, T)>;
     using G = function<T(T, E)>;
     using H = function<E(E, E)>;
@@ -1096,7 +1046,7 @@ struct SegmentTree {
     E ei;
     vector<T> dat;
     vector<E> laz;
-    SegmentTree(F f, G g, H h, T ti, E ei):
+    LazySegTree(F f, G g, H h, T ti, E ei):
         f(f), g(g), h(h), ti(ti), ei(ei) {}
 
     void init(int n_){
@@ -1196,8 +1146,8 @@ struct SegmentTree {
 
 
 // なんかこれ速いhashmapらしい
-// #include <ext/pb_ds/assoc_container.hpp>
-// using namespace __gnu_pbds;
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
 struct custom_hash {
     // https://codeforces.com/blog/entry/62393
     static uint64_t splitmix64(uint64_t x) {

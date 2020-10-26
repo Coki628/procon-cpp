@@ -48,5 +48,20 @@ int main() {
     vector<ll> acc;
     acc.insert(acc.begin(), 0);
 
+    // min,maxのラムダ
+    // [](ll a, ll b) { return min(a, b); }
+    // [](ll a, ll b) { return max(a, b); }
+    // 大小比較関数
+    // less_equal<ll>()
+    // greater_equal<ll>()
+
+    // vector -> set
+    // unordered_set<ll> S(A.begin(), A.end());
+
+    // c++17からはこう書ける
+    vector<pair<ll, ll>> AB;
+    for (auto &[a, b] : AB) {
+    }
+
     return 0;
 }
