@@ -434,7 +434,7 @@ struct SegTree {
         if (ok != r + 1) {
             return ok;
         } else {
-            return INF;
+            return -1;
         }
     }
 
@@ -453,12 +453,13 @@ struct SegTree {
         if (ok != l - 1) {
             return ok;
         } else {
-            return -INF;
+            return -1;
         }
     }
-    // 使用例
-    // stmx.bisearch_back(l, r, x, greater<ll>());
 };
+// 使用例
+// SegTree<ll> seg([](ll a, ll b) { return max(a, b); }, -INF);
+// stmx.bisearch_back(l, r, x, greater<ll>());
 
 
 template<typename Monoid>
@@ -601,7 +602,7 @@ struct SparseTable {
         if (ok != r + 1) {
             return ok;
         } else {
-            return INF;
+            return -1;
         }
     }
 
@@ -620,7 +621,7 @@ struct SparseTable {
         if (ok != l - 1) {
             return ok;
         } else {
-            return -INF;
+            return -1;
         }
     }
     // 使用例
@@ -692,7 +693,7 @@ struct BIT {
         if (ok != r+1) {
             return ok;
         } else {
-            return INF;
+            return -1;
         }
     }
 
@@ -712,7 +713,7 @@ struct BIT {
         if (ok != l - 1) {
             return ok;
         } else {
-            return -INF;
+            return -1;
         }
     }
 };
@@ -925,7 +926,6 @@ struct ModInt {
 
     static int get_mod() { return mod; }
 };
-
 using mint = ModInt<MOD>;
 
 
