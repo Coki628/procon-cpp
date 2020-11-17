@@ -21,8 +21,6 @@ int main() {
     ll INF = LONG_LONG_MAX;
     cout << INF << endl;
 
-    ll a = fmx<ll>(1, 2);
-
     // 重複削除(案外めんどい)
     sort(A.begin(), A.end());
     A.erase(unique(A.begin(), A.end()), A.end());
@@ -62,6 +60,14 @@ int main() {
     vector<pair<ll, ll>> AB;
     for (auto &[a, b] : AB) {
     }
+
+    // substrは右端じゃなくて文字数渡す。多すぎたらよしなに切ってくれるぽい。
+    string s = "test";
+    string t = s.substr(1, 10);
+    cout << t << endl;
+
+    // llでもldでも、その型の最大値が取れる
+    ll mx = numeric_limits<ll>::max();
 
     return 0;
 }
