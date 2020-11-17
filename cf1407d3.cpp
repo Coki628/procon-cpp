@@ -5,6 +5,7 @@
  * ・セグ木でも通るか試してみた。C++AC1.65秒。まあ遅くはなるけど通るね。
  * ・TODO: SojiさんのACLのセグ木使ってるやつめっちゃ速かったから、時間ある時にチェックする。
  * →https://codeforces.com/contest/1407/submission/92273033
+ * ・functionやめてtemplate引数にしてみたけど、速くならなかった。。
  */
 
 #include <bits/stdc++.h>
@@ -125,7 +126,7 @@ struct SegmentTree {
     }
 
     // 区間[l,r]で左から最初にxに対して比較の条件を満たすような値が出現する位置
-    ll bisearch_fore(ll l, ll r, ll x, function<bool(ll, ll)> compare) {
+    template<typename G> ll bisearch_fore(ll l, ll r, ll x, const G &compare) {
         ll ok = r + 1;
         ll ng = l - 1;
         while (ng+1 < ok) {
@@ -139,12 +140,12 @@ struct SegmentTree {
         if (ok != r + 1) {
             return ok;
         } else {
-            return INF;
+            return -1;
         }
     }
 
     // 区間[l,r]で右から最初にxに対して比較の条件を満たすような値が出現する位置
-    ll bisearch_back(ll l, ll r, ll x, function<bool(ll, ll)> compare) {
+    template<typename G> ll bisearch_back(ll l, ll r, ll x, const G &compare) {
         ll ok = l - 1;
         ll ng = r + 1;
         while (ok+1 < ng) {
@@ -158,7 +159,7 @@ struct SegmentTree {
         if (ok != l - 1) {
             return ok;
         } else {
-            return -INF;
+            return -1;
         }
     }
 };
@@ -190,21 +191,21 @@ int main() {
     rep(cur, 0, N) {
         if (cur != 0) {
             prev = stmn.bisearch_back(0, cur-1, A[cur], less_equal<ll>());
-            if (prev != -INF) {
+            if (prev != -1) {
                 chmin(dp[cur], dp[prev] + 1);
             }
             prev = stmx.bisearch_back(0, cur-1, A[cur], greater_equal<ll>());
-            if (prev != -INF) {
+            if (prev != -1) {
                 chmin(dp[cur], dp[prev] + 1);
             }
         }
         if (cur != N-1) {
             nxt = stmn.bisearch_fore(cur+1, N-1, A[cur], less_equal<ll>());
-            if (nxt != INF) {
+            if (nxt != -1) {
                 chmin(dp[nxt], dp[cur] + 1);
             }
             nxt = stmx.bisearch_fore(cur+1, N-1, A[cur], greater_equal<ll>());
-            if (nxt != INF) {
+            if (nxt != -1) {
                 chmin(dp[nxt], dp[cur] + 1);
             }
         }
