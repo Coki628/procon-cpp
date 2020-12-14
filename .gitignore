@@ -1,5 +1,5 @@
-*
-!*.cpp
-!.gitignore
-!*.py
-!lib
+*.exe
+TopCoder/*.jar
+TopCoder/*.jnlp
+TopCoder/*/*.html
+TopCoder/*/*.sample
