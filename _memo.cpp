@@ -69,5 +69,19 @@ int main() {
     // llでもldでも、その型の最大値が取れる
     ll mx = numeric_limits<ll>::max();
 
+    // main内での再帰の書き方
+    // auto dfs = [&](auto&& f, ll u, ll prev) -> void {
+    //     for (auto v : nodes[u]) {
+    //         if (v == prev) continue;
+    //         f(f, v, u);
+    //     }
+    //     return;
+    // };
+    // dfs(dfs, 0, -1);
+
+    // 3次元これでいけるみたいだ。
+    ll N, M, L;
+    vector N(M, vector(L, 0));
+
     return 0;
 }
