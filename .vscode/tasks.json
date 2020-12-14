@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g3",
+                "-O0",
+                "-D_FORTIFY_SOURCE=2",
+                "-D_GLIBCXX_DEBUG",
+                "-ftrapv",
+                "-fstack-protector-all",
+                "-fno-omit-frame-pointer",
+                "-fsanitize=address",
+                "${fileDirname}/${fileBasename}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}.exe"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
+// 参考：http://koturn.hatenablog.com/entry/2018/07/29/180000
+// g++ -g3 -O0 -D_FORTIFY_SOURCE=2 -D_GLIBCXX_DEBUG -ftrapv -fstack-protector-all -fno-omit-frame-pointer -fsanitize=address main.cpp -o

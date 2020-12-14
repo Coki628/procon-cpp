@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"chrono": "cpp",
+			"complex": "cpp",
+			"tuple": "cpp",
+			"random": "cpp",
+			"iostream": "cpp",
+			"cmath": "cpp",
+			"unordered_set": "cpp",
+			"functional": "cpp",
+			"*.tcc": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"regex": "cpp",
+			"limits": "cpp",
+			"valarray": "cpp",
+			"iomanip": "cpp",
+			"deque": "cpp",
+			"vector": "cpp",
+			"array": "cpp",
+			"bitset": "cpp"
+		},
+		"files.exclude": {
+			"**/*.exe": true
+		}
+	}
+}
