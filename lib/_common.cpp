@@ -141,6 +141,22 @@ pair<mli, mil> compress(vector<ll> A) {
 }
 
 
+// 素因数分解
+template<typename T> 
+map<T, int> factorize(T x) {
+    map<T, int> res;
+    for (T i = 2; i*i <= x; i++) {
+        while (x%i == 0) {
+            x /= i;
+            res[i]++;
+        }
+        if (x == 1) break;
+    }
+    if (x != 1) res[x]++;
+    return res;
+}
+
+
 // ModInt
 template<int mod>
 struct ModInt {
@@ -184,7 +200,7 @@ struct ModInt {
 
     bool operator!=(const ModInt &p) const { return x != p.x; }
 
-    ModInt inv() const {
+    ModInt inverse() const {
         int a = x, b = mod, u = 1, v = 0, t;
         while(b > 0) {
         t = a / b;

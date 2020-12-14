@@ -366,7 +366,7 @@ public:
         return es;
     }
 
-    HeavyLightDecomposition(vvl &g) : g(g) {}
+    explicit HeavyLightDecomposition(vvl &g) : g(g) {}
 
     private:
     void dfs_sz(int idx, int p, int d) {

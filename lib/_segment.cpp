@@ -366,6 +366,10 @@ struct BIT {
         add(i, x - get(i));
     }
 
+    T operator[](int i) {
+        return get(i);
+    }
+
     // 区間[l, r]を左から右に向かってx番目の値がある位置
     ll bisearch_fore(int l, int r, ll x) {
         ll l_sm = sum(l-1);
@@ -407,26 +411,27 @@ struct BIT {
     }
 };
 
-// 区間加算BIT(区間加算・区間合計取得)
+// 区間加算BIT(区間加算・区間和取得)
+template<typename T>
 struct BIT2 {
 
     ll N;
-    vector<ll> data0, data1;
+    vector<T> data0, data1;
 
     BIT2() {};
 
-    BIT2(ll N) {
+    BIT2(int N) {
         resize(N);
     }
 
-    void resize(ll n) {
+    void resize(int n) {
         // 添字0が使えないので、内部的には全て1-indexedとして扱う
         N = ++n;
         data0.resize(N);
         data1.resize(N);
     }
 
-    void _add(vector<ll> &data, ll k, ll x) {
+    void _add(vector<T> &data, int k, T x) {
         k++;
         while (k < N) {
             data[k] += x;
@@ -434,9 +439,9 @@ struct BIT2 {
         }
     }
 
-    ll _get(vector<ll> &data, ll k) {
+    T _get(vector<T> &data, int k) {
         k++;
-        ll s = 0;
+        T s = 0;
         while (k) {
             s += data[k];
             k -= k & -k;
@@ -445,7 +450,7 @@ struct BIT2 {
     }
 
     // 区間[l,r)に値xを加算
-    void add(ll l, ll r, ll x) {
+    void add(int l, int r, T x) {
         _add(data0, l, -x*(l-1));
         _add(data0, r, x*(r-1));
         _add(data1, l, x);
@@ -453,23 +458,27 @@ struct BIT2 {
     }
 
     // 1点加算
-    void add(ll i, ll x) {
+    void add(int i, T x) {
         add(i, i+1, x);
     }
 
     // 区間[l,r)の和を取得
-    ll query(ll l, ll r) {
+    T query(int l, int r) {
         return _get(data1, r-1) * (r-1) + _get(data0, r-1) - _get(data1, l-1) * (l-1) - _get(data0, l-1);
     }
 
     // 1点取得
-    ll get(ll i) {
+    T get(int i) {
         return query(i, i+1);
     }
 
     // 1点更新
-    void update(ll i, ll x) {
+    void update(int i, T x) {
         add(i, i+1, x - get(i));
+    }
+
+    T operator[](int i) {
+        return get(i);
     }
 };
 
@@ -1211,5 +1220,48 @@ public:
             down_propagate(k);
         }
         return v;
+    }
+};
+
+
+struct Mo {
+    int n;
+    vector< pair< int, int > > lr;
+
+    explicit Mo(int n) : n(n) {}
+
+    // クエリを半開区間[l,r)で順番に追加
+    void add(int l, int r) {
+        lr.emplace_back(l, r);
+    }
+
+    template< typename AL, typename AR, typename EL, typename ER, typename O >
+    void build(const AL &add_left, const AR &add_right, const EL &erase_left, const ER &erase_right, const O &out) {
+        int q = (int) lr.size();
+        int bs = n / min< int >(n, sqrt(q));
+        vector< int > ord(q);
+        iota(begin(ord), end(ord), 0);
+        sort(begin(ord), end(ord), [&](int a, int b) {
+            int ablock = lr[a].first / bs, bblock = lr[b].first / bs;
+            if(ablock != bblock) return ablock < bblock;
+            return (ablock & 1) ? lr[a].second > lr[b].second : lr[a].second < lr[b].second;
+        });
+        int l = 0, r = 0;
+        for(auto idx : ord) {
+            while(l > lr[idx].first) add_left(--l);
+            while(r < lr[idx].second) add_right(r++);
+            while(l < lr[idx].first) erase_left(l++);
+            while(r > lr[idx].second) erase_right(--r);
+            out(idx);
+        }
+    }
+
+    // add:   区間が伸びる時の処理(引数はmoのindex)
+    // erase: 区間が縮む時の処理(引数はmoのindex)
+    // out:   クエリに回答する処理(引数はクエリのindex)
+    // 伸縮時に左右で処理に違いがなければadd,eraseは1つずつでOK
+    template< typename A, typename E, typename O >
+    void build(const A &add, const E &erase, const O &out) {
+        build(add, add, erase, erase, out);
     }
 };
