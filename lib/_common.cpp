@@ -75,8 +75,8 @@ vector<T> accumulate(vector<T> &A) {
 }
 
 
-template<typename T>
-vector<T> accumulate(vector<T> &A, function<T(T, T)> func) {
+template<typename T, typename F>
+vector<T> accumulate(vector<T> &A, const F &func) {
     int N = A.size();
     if (!N) return {};
     vector<T> res(N);
@@ -88,7 +88,8 @@ vector<T> accumulate(vector<T> &A, function<T(T, T)> func) {
 
 
 // 条件を満たす最小値を見つける二分探索
-ll bisearch_min(ll mn, ll mx, function<bool(ll)> func) {
+template<typename F>
+ll bisearch_min(ll mn, ll mx, const F &func) {
 
     ll ok = mx;
     ll ng = mn;
@@ -107,7 +108,8 @@ ll bisearch_min(ll mn, ll mx, function<bool(ll)> func) {
 
 
 // 条件を満たす最大値を見つける二分探索
-ll bisearch_max(ll mn, ll mx, function<bool(ll)> func) {
+template<typename F>
+ll bisearch_max(ll mn, ll mx, const F &func) {
 
     ll ok = mn;
     ll ng = mx;
@@ -253,7 +255,7 @@ struct ModTools {
         rep(i, 2, MAX) {
             fact[i] = fact[i-1] * i;
         }
-        inv[MAX-1] = fact[MAX-1].inv();
+        inv[MAX-1] = fact[MAX-1].inverse();
         rrep(i, MAX-2, -1) {
             inv[i] = inv[i+1] * (i+1);
         }

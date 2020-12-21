@@ -24,7 +24,9 @@
 			"deque": "cpp",
 			"vector": "cpp",
 			"array": "cpp",
-			"bitset": "cpp"
+			"bitset": "cpp",
+			"thread": "cpp",
+			"numeric": "cpp"
 		},
 		"files.exclude": {
 			"**/*.exe": true

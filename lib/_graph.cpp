@@ -282,6 +282,16 @@ struct ReRooting {
 };
 
 
+// HD分解
+// ・主な使用方法など列挙
+// 　・初期化後、忘れずにbuildを呼ぶこと。
+// 　・パスクエリはadd,queryで処理
+// 　・1点取得/更新はhld.in[x]で可能。add,queryは呼ばなくていい。
+// 　・部分木クエリは[hld.in[x],hld.out[x])で処理
+// 　・根付き木は頂点0が根である前提。他の頂点を根にしたい場合、
+// 　　HLD構築前に根と頂点0の関係を全てスワップしておく。
+// 　・パスクエリ[u,v]にて、u->lcaとlca->vでHLD上の列の向きが逆になるので、
+// 　　乗せたセグ木の演算にマージ方向がある場合などは注意して処理する。
 struct HeavyLightDecomposition {
 public:
     vvl &g;

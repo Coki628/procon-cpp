@@ -59,27 +59,30 @@ int popcount(ll S) { return __builtin_popcountll(S); }
 ll gcd(ll a, ll b) { return __gcd(a, b); }
 
 template<typename T>
-vector<T> accumulate(vector<T> A) {
+vector<T> accumulate(vector<T> &A) {
     int N = A.size();
     vector<T> res(N);
     res[0] = A[0];
     rep(i, 1, N) res[i] = res[i-1] + A[i];
     return res;
-    }
-
-template<typename T>
-vector<T> accumulate(vector<T> A, function<T(T, T)> func) {
-    int N = A.size();
-    vector<T> res(N);
-    res[0] = A[0];
-    rep(i, 1, N) res[i] = func(res[i-1], A[i]);
-    return res;
 }
-// accumulate<ll>(A, [](ll a, ll b) { return min(a, b); });
+
+// template<typename T, typename F>
+// vector<T> accumulate(vector<T> &A, const F &func=[](T a, T, b) { return a + b; }) {
+//     int N = A.size();
+//     if (!N) return {};
+//     vector<T> res(N);
+//     res[0] = A[0];
+//     rep(i, 1, N) res[i] = func(res[i-1], A[i]);
+//     return res;
+// }
 
 int main() {
     cin.tie(0);
     ios::sync_with_stdio(false);
 
+    vector<ll> A = {1, 2, 3, 4, 5};
+    auto acc = accumulate(A);
+    print(acc);
     return 0;
 }
